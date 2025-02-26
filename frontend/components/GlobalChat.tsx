@@ -5,24 +5,69 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const agentNames = ["agent1", "agent2", "agent3"];
-
+/** ✅ Ensure messages have unique keys */
 export function GlobalChat() {
-  const [messages, setMessages] = useState<{ sender: string; text: string }[]>(
-    []
-  );
+  const [messages, setMessages] = useState<
+    { id: string; sender: string; text: string; timestamp: number }[]
+  >([]);
+  const [agentStarted, setAgentStarted] = useState(false);
+  const [lastTimestamp, setLastTimestamp] = useState(0); // ✅ Track last received timestamp
 
+  /** ✅ Fetch only new messages */
   useEffect(() => {
-    const interval = setInterval(() => {
-      const sender = agentNames[Math.floor(Math.random() * agentNames.length)];
-      const text = `Message from ${sender}: ${Math.random()
-        .toString(36)
-        .substring(7)}`;
-      setMessages((prev) => [...prev, { sender, text }]);
-    }, 30000);
+    const fetchMessages = async () => {
+      try {
+        console.log("🔄 Fetching messages...");
+        const response = await fetch(`/api/globalChat?since=${lastTimestamp}`);
+        const data = await response.json();
 
+        if (!data.chat || data.chat.length === 0) {
+          console.warn("⚠️ No new messages received.");
+          return;
+        }
+
+        console.log("📩 Fetched new messages:", data.chat);
+
+        setMessages((prev) => {
+          const newMessages = data.chat.map((msg) => ({
+            id: `${msg.id}-${msg.timestamp}`, // ✅ Ensure each message has a unique key
+            sender: msg.sender,
+            text: msg.message, // ✅ Ensure correct field is used
+            timestamp: msg.timestamp,
+          }));
+
+          console.log("✅ Merging new messages:", newMessages);
+
+          return [...prev, ...newMessages]; // ✅ Properly append new messages
+        });
+
+        setLastTimestamp(data.chat[data.chat.length - 1].timestamp); // ✅ Update last timestamp
+      } catch (error) {
+        console.error("❌ Error fetching chat messages:", error);
+      }
+    };
+
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [lastTimestamp]);
+
+  /** ✅ Auto-start agent1 after 3s */
+  useEffect(() => {
+    if (!agentStarted) {
+      const timer = setTimeout(async () => {
+        console.log("🚀 Auto-starting agent1...");
+        try {
+          await fetch("/api/agent1/openPosition");
+          setAgentStarted(true);
+        } catch (error) {
+          console.error("❌ Error auto-starting agent1:", error);
+        }
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [agentStarted]);
 
   return (
     <Card className="w-full lg:w-96 flex flex-col h-[400px] lg:h-screen">
@@ -32,19 +77,42 @@ export function GlobalChat() {
 
       <CardContent className="flex-grow overflow-hidden">
         <ScrollArea className="h-full pr-4">
-          {messages.map((msg, index) => (
-            <div key={index} className="flex mb-4 justify-start">
-              <div className="flex items-start">
-                <Avatar className="w-8 h-8">
-                  <AvatarImage src={`/placeholder.svg?height=32&width=32`} />
-                  <AvatarFallback>{msg.sender[0]}</AvatarFallback>
-                </Avatar>
-                <div className="mx-2 p-2 rounded-lg bg-accent">
-                  <p className="text-sm">{msg.text}</p>
+          {messages.length === 0 ? (
+            <p className="text-gray-500 text-center">No messages yet...</p>
+          ) : (
+            messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex mb-4 ${
+                  msg.sender === "You" ? "justify-end" : "justify-start"
+                }`}
+              >
+                <div
+                  className={`flex items-start ${
+                    msg.sender === "You" ? "flex-row-reverse" : ""
+                  }`}
+                >
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={`/placeholder.svg?height=32&width=32`} />
+                    <AvatarFallback>{msg.sender[0]}</AvatarFallback>
+                  </Avatar>
+                  <div
+                    className={`mx-2 p-2 rounded-lg ${
+                      msg.sender === "You"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200"
+                    }`}
+                  >
+                    <p className="text-xs font-bold">{msg.sender}</p>
+                    <p className="text-sm">
+                      {msg.text || "⚠️ Message missing!"}
+                    </p>{" "}
+                    {/* ✅ Ensure text is displayed */}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </ScrollArea>
       </CardContent>
     </Card>
