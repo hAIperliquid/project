@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -33,18 +32,7 @@ const agentData = [
   },
 ];
 
-export function Agents({
-  onSelectAgent,
-}: {
-  onSelectAgent: (agent: string) => void;
-}) {
-  const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
-
-  const handleAgentSelect = (agentName: string) => {
-    setSelectedAgent(agentName);
-    onSelectAgent(agentName);
-  };
-
+export function Agents() {
   return (
     <div>
       <h2 className="text-2xl font-semibold mb-6">Agents</h2>
@@ -52,19 +40,12 @@ export function Agents({
         {agentData.map((agent) => (
           <Card
             key={agent.name}
-            className={`cursor-pointer transition-all duration-300 hover:shadow-lg overflow-hidden relative ${
-              selectedAgent === agent.name
-                ? "ring-2 ring-primary shadow-lg"
-                : ""
-            }`}
-            onClick={() => handleAgentSelect(agent.name)}
+            className={
+              "cursor-pointer transition-all duration-300 hover:shadow-lg overflow-hidden relative ring-1 ring-primary shadow-lg"
+            }
           >
             <div className="relative">
-              <div
-                className={`h-16 ${
-                  selectedAgent === agent.name ? "bg-primary" : "bg-secondary"
-                }`}
-              ></div>
+              <div className={"h-16 bg-primary"}></div>
               <Avatar className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-24 h-24 border-4 border-background z-10">
                 <AvatarImage src={agent.avatar} alt={agent.name} />
                 <AvatarFallback>{agent.name[0]}</AvatarFallback>
@@ -101,9 +82,7 @@ export function Agents({
                 </div>
               </div>
             </CardContent>
-            {selectedAgent === agent.name && (
-              <div className="absolute inset-0 bg-primary opacity-10 pointer-events-none"></div>
-            )}
+            <div className="absolute inset-0 bg-primary opacity-10 pointer-events-none"></div>
           </Card>
         ))}
       </div>
