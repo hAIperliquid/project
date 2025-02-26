@@ -4,10 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export function FundPortfolio() {
   return (
     <Card className="mb-4">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 px-5 pt-4">
         <CardTitle className="text-xl">Fund Portfolio</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-5 pt-0">
         <div className="text-2xl font-bold mb-4">$28,000,000</div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Card className="p-3">

@@ -4,10 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export function BalancesAndManagedFund() {
   return (
     <Card className="mb-4">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 px-5 pt-4">
         <CardTitle className="text-xl">Overview</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-5 pt-0">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-3">
             <h3 className="text-base font-semibold mb-2">Balances</h3>
