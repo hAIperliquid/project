@@ -1,11 +1,22 @@
 import { request, gql } from "graphql-request";
 
-const GRAPH_API_URL = `https://gateway.thegraph.com/api/${process.env.GRAPH_API_KEY}/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV`;
+// const GRAPH_API_URL = `https://gateway.thegraph.com/api/${process.env.GRAPH_API_KEY}/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV?chain=mainnet`;
+const GRAPH_API_URL = `https://gateway.thegraph.com/api/${process.env.GRAPH_API_KEY}/subgraphs/id/GqzP4Xaehti8KSfQmv3ZctFSjnSUYZ4En5NRsiTbvZpz`;
 
 /**
- * Calculate pool score to determine the best Uniswap yield opportunity.
+ * Format large numbers into readable formats (e.g., $1.2M, $3.5B)
  */
-function calculatePoolScore(pool: any) {
+function formatCurrency(value: number): string {
+  if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
+  if (value >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
+  if (value >= 1e3) return `$${(value / 1e3).toFixed(2)}K`;
+  return `$${value.toFixed(2)}`;
+}
+
+/**
+ * Calculate a pool score to rank Uniswap yield opportunities.
+ */
+function calculatePoolScore(pool: any): number {
   const minTVL = 100_000,
     maxTVL = 1_000_000;
   const minVolume = 50_000,
@@ -32,9 +43,9 @@ function calculatePoolScore(pool: any) {
 }
 
 /**
- * Fetch Uniswap pools and determine the best yield position.
+ * Fetch Uniswap pools and determine the top 5 yield positions.
  */
-export async function findBestUniswapPosition() {
+export async function findBestUniswapPositions() {
   const query = gql`
     {
       pools(first: 10, orderBy: totalValueLockedUSD, orderDirection: desc) {
@@ -42,10 +53,12 @@ export async function findBestUniswapPosition() {
         token0 {
           id
           symbol
+          decimals
         }
         token1 {
           id
           symbol
+          decimals
         }
         feeTier
         totalValueLockedUSD
@@ -56,32 +69,56 @@ export async function findBestUniswapPosition() {
 
   try {
     const data = await request(GRAPH_API_URL, query);
-    console.log("Uniswap data:", data);
 
     if (!data.pools || data.pools.length === 0) {
-      return "No liquidity pools found.";
+      return { message: "No liquidity pools found.", pools: [] };
     }
 
-    // Rank pools by score
-    const bestPool = data.pools
+    // console log each pool
+    data.pools.forEach((pool) => {
+      console.log(pool);
+    });
+
+    // Rank pools by score and get the top 5
+    const sortedPools = data.pools
       .map((pool) => ({ ...pool, score: calculatePoolScore(pool) }))
-      .sort((a, b) => b.score - a.score)[0]; // Highest scoring pool
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+
+    // Format the top 5 pools for chat
+    let message = "**Top 5 Uniswap Yield Opportunities:**\n\n";
+    sortedPools.forEach((pool, index) => {
+      message += `**${index + 1}. ${pool.token0.symbol} / ${
+        pool.token1.symbol
+      }**  \n`;
+      message += `- **Fee Tier:** ${pool.feeTier / 10000}%  \n`;
+      message += `- **Total Value Locked:** ${formatCurrency(
+        parseFloat(pool.totalValueLockedUSD)
+      )}  \n`;
+      message += `- **24h Volume:** ${formatCurrency(
+        parseFloat(pool.volumeUSD)
+      )}  \n`;
+    });
+
+    // Select the best pool
+    const bestPool = sortedPools[0];
 
     return {
-      message: `Found a high-yield Uniswap position:
-      - Pool: ${bestPool.token0.symbol} / ${bestPool.token1.symbol}
-      - Fee Tier: ${bestPool.feeTier / 10000}%
-      - Total Value Locked: $${parseFloat(bestPool.totalValueLockedUSD).toFixed(
-        2
-      )}
-      - 24h Volume: $${parseFloat(bestPool.volumeUSD).toFixed(2)}
-      - Estimated Score: ${(bestPool.score * 100).toFixed(2)}
-
-      Would you like to open this position?`,
-      pool: bestPool,
+      topPoolsMessage: message,
+      bestPoolMessage: `**Selected the best pool for execution:**\n\n**Pool:** ${
+        bestPool.token0.symbol
+      } / ${bestPool.token1.symbol}  \n**Fee Tier:** ${
+        bestPool.feeTier / 10000
+      }%  \n**Total Value Locked:** ${formatCurrency(
+        parseFloat(bestPool.totalValueLockedUSD)
+      )}  \n**24h Volume:** ${formatCurrency(
+        parseFloat(bestPool.volumeUSD)
+      )}  \n\nRequesting approval for Task Execution...`,
+      bestPool,
+      pools: sortedPools,
     };
   } catch (error) {
     console.error("Error fetching Uniswap data:", error);
-    return { message: "Error fetching Uniswap data." };
+    return { message: "Error fetching Uniswap data.", pools: [] };
   }
 }

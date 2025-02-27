@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { findBestUniswapPosition } from "@/lib/uniswap";
+import { findBestUniswapPositions } from "@/lib/uniswap";
 
-/**
- * Automatically finds the best Uniswap position and sends proposal.
- */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { agent: string } }
+  context: { params: Promise<{ agent: string }> }
 ) {
   try {
-    const { agent } = await params;
+    const { agent } = await context.params;
 
     if (agent !== "agent1") {
       return NextResponse.json(
@@ -18,8 +15,10 @@ export async function GET(
       );
     }
 
-    const position = await findBestUniswapPosition();
-    if (position === "No liquidity pools found." || !position.pool) {
+    const { topPoolsMessage, bestPoolMessage, bestPool } =
+      await findBestUniswapPositions();
+
+    if (!bestPool) {
       return NextResponse.json(
         { error: "No suitable Uniswap position found." },
         { status: 404 }
@@ -27,44 +26,57 @@ export async function GET(
     }
 
     const proposalId = Math.floor(Math.random() * 1000) + 1;
-    console.log(`Agent1 proposing Uniswap position ${proposalId}`);
 
-    const API_BASE_URL =
-      process.env.API_BASE_URL || "http://localhost:3000/api";
+    console.log(`🚀 agent1: Proposing Uniswap position ${proposalId}`);
 
-    await fetch(`${API_BASE_URL}/globalChat`, {
+    // Send top pools message
+    await fetch(`${process.env.BASE_URL}/api/globalChat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         sender: agent,
-        message: `I propose to open a Uniswap position:\n${position.message}\nRequesting approval for Task Execution with ID: ${proposalId}`,
+        message: topPoolsMessage,
         proposalId,
       }),
     });
 
-    // Sequential agent approval
-    const approvingAgents = ["agent2", "agent3"];
-    for (const [index, approvingAgent] of approvingAgents.entries()) {
-      await new Promise((resolve) => setTimeout(resolve, (index + 1) * 3000)); // Delay between approvals
-      console.log(`${approvingAgent} approving task ${proposalId}...`);
+    // Send best pool selection message
+    await fetch(`${process.env.BASE_URL}/api/globalChat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sender: agent,
+        message: bestPoolMessage,
+        proposalId,
+      }),
+    });
 
-      await fetch(`${API_BASE_URL}/${approvingAgent}/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sender: approvingAgent,
-          message: `I approve Task Execution with ID: ${proposalId}.\nSignature: ************`,
-        }),
-      });
-    }
+    console.log(`✅ Sent messages for proposal ${proposalId}`);
+
+    // ✅ Ensure agent2 & agent3 approvals are properly queued
+    const approvingAgents = ["agent2", "agent3"];
+    approvingAgents.forEach((approvingAgent, index) => {
+      setTimeout(async () => {
+        console.log(`🤖 ${approvingAgent} is approving task ${proposalId}...`);
+        await fetch(`${process.env.BASE_URL}/api/${approvingAgent}/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sender: approvingAgent,
+            message: `I approve Task Execution with ID: ${proposalId}.\nSignature: ************`,
+            proposalId,
+          }),
+        });
+      }, (index + 1) * 3000); // Delay approvals for clarity
+    });
 
     return NextResponse.json({
       message: "Proposal sent to global chat.",
       proposalId,
-      position,
+      bestPool,
     });
   } catch (error) {
-    console.error("Error in openPosition route:", error);
+    console.error("❌ Error in openPosition route:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

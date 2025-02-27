@@ -1,15 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { chatMessages } from "@/lib/chatStorage";
 
-// ✅ Global chat message storage (should be stored in a DB eventually)
-const chatMessages: {
-  id: number;
-  sender: string;
-  message: string;
-  timestamp: number;
-}[] = [];
-
-export async function POST(req: Request) {
-  const { sender, message } = await req.json();
+export async function POST(req: NextRequest) {
+  const { sender, message, proposalId } = await req.json();
 
   if (!sender || !message) {
     return NextResponse.json(
@@ -22,7 +15,8 @@ export async function POST(req: Request) {
     id: chatMessages.length + 1,
     sender,
     message,
-    timestamp: Date.now(), // ✅ Store when message was received
+    timestamp: Date.now(),
+    proposalId,
   };
 
   chatMessages.push(newMessage);
@@ -32,11 +26,10 @@ export async function POST(req: Request) {
   return NextResponse.json({ success: true });
 }
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const lastTimestamp = parseInt(url.searchParams.get("since") || "0", 10);
 
-  // ✅ Only return messages that were sent **after** the last known timestamp
   const newMessages = chatMessages.filter(
     (msg) => msg.timestamp > lastTimestamp
   );

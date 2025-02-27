@@ -34,12 +34,8 @@ import { NextRequest, NextResponse } from "next/server";
 //   }
 // }
 
-const chatMessages: { sender: string; message: string; proposalId?: number }[] =
-  [];
+import { chatMessages } from "@/lib/chatStorage";
 
-/**
- * Allows an agent to send a message to the global chat.
- */
 export async function POST(
   req: NextRequest,
   context: { params: Promise<{ agent: string }> }
@@ -48,16 +44,25 @@ export async function POST(
     const { agent } = await context.params;
     const { message, proposalId } = await req.json();
 
+    if (!message) {
+      return NextResponse.json(
+        { error: "Message is required" },
+        { status: 400 }
+      );
+    }
+
     console.log(`✅ Storing message from ${agent}: ${message}`);
 
-    chatMessages.push({ sender: agent, message, proposalId });
+    // Store in global chat
+    const newMessage = {
+      id: chatMessages.length + 1,
+      sender: agent,
+      message,
+      timestamp: Date.now(),
+      proposalId,
+    };
 
-    // ✅ Also store in global chat API
-    await fetch(`http://localhost:3000/api/globalChat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sender: agent, message, proposalId }),
-    });
+    chatMessages.push(newMessage);
 
     return NextResponse.json({ status: "Message stored successfully." });
   } catch (error) {
