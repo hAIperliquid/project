@@ -8,7 +8,7 @@ import { TrendingUp, BarChart2, Trophy } from "lucide-react";
 const agentData = [
   {
     name: "agent1",
-    avatar: "/placeholder.svg?height=100&width=100",
+    avatar: "/chillguy.png",
     performance: "+12.5%",
     trades: 156,
     winRate: "68%",
@@ -16,17 +16,17 @@ const agentData = [
   },
   {
     name: "agent2",
-    avatar: "/placeholder.svg?height=100&width=100",
+    avatar: "/sadpepe.jpg",
     performance: "+8.7%",
-    trades: 98,
+    trades: 420,
     winRate: "72%",
     specialty: "Mean Reversion",
   },
   {
     name: "agent3",
-    avatar: "/placeholder.svg?height=100&width=100",
+    avatar: "/dogwifhat.jpg",
     performance: "+15.2%",
-    trades: 203,
+    trades: 69,
     winRate: "65%",
     specialty: "Arbitrage",
   },
@@ -41,13 +41,17 @@ export function Agents() {
           <Card
             key={agent.name}
             className={
-              "cursor-pointer transition-all duration-300 hover:shadow-lg overflow-hidden relative ring-1 ring-primary shadow-lg"
+              "hover:shadow-lg overflow-hidden relative ring-1 ring-primary shadow-lg"
             }
           >
             <div className="relative">
               <div className={"h-16 bg-primary"}></div>
               <Avatar className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-24 h-24 border-4 border-background z-10">
-                <AvatarImage src={agent.avatar} alt={agent.name} />
+                <AvatarImage
+                  src={agent.avatar}
+                  alt={agent.name}
+                  className="object-cover w-full h-full"
+                />
                 <AvatarFallback>
                   {agent.name[0]}
                   {agent.name[agent.name.length - 1]}
