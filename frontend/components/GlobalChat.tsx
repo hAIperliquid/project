@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 
@@ -13,6 +15,9 @@ export function GlobalChat() {
     { id: string; sender: string; text: string; timestamp: number }[]
   >([]);
   const [agentStarted, setAgentStarted] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   /** Subscribe to Firestore chat messages */
   useEffect(() => {
@@ -60,14 +65,51 @@ export function GlobalChat() {
     });
   };
 
+  /** Scroll to bottom of chat */
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setShowScrollButton(false);
+  }, []);
+
+  /** Check scroll position and show/hide scroll button */
+  useEffect(() => {
+    const scrollArea = scrollAreaRef.current;
+    if (!scrollArea) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollArea;
+      const scrolledToBottom = scrollHeight - scrollTop - clientHeight < 20;
+
+      setShowScrollButton(!scrolledToBottom);
+    };
+
+    scrollArea.addEventListener("scroll", handleScroll);
+
+    // Cleanup event listener on unmount
+    return () => scrollArea.removeEventListener("scroll", handleScroll);
+  }, [messages]); // Runs every time messages update
+
+  /** Scroll to bottom when new messages arrive if already near bottom */
+  useEffect(() => {
+    const scrollArea = scrollAreaRef.current;
+    if (!scrollArea) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = scrollArea;
+    const scrolledToBottom = scrollHeight - scrollTop - clientHeight < 20;
+
+    if (scrolledToBottom) {
+      scrollToBottom();
+    }
+  }, [messages, scrollToBottom]); // Depend on messages so it updates when a new message arrives
+
   return (
-    <Card className="w-full lg:w-1/3 flex flex-col h-[400px] lg:h-screen">
+    <Card className="w-full lg:w-1/3 flex flex-col h-[400px] lg:h-screen relative">
       <CardHeader className="p-5 pt-6">
         <CardTitle>Global Chat</CardTitle>
       </CardHeader>
 
       <CardContent className="flex-grow overflow-hidden p-4 pt-0">
-        <ScrollArea className="h-full">
+        <ScrollArea className="h-full overflow-y-auto" ref={scrollAreaRef}>
           {messages.length === 0 ? (
             <p className="text-gray-500 text-center">No messages yet...</p>
           ) : (
@@ -92,8 +134,19 @@ export function GlobalChat() {
               </div>
             ))
           )}
+          <div ref={messagesEndRef} /> {/* Dummy div for scrolling */}
         </ScrollArea>
       </CardContent>
+
+      {showScrollButton && (
+        <Button
+          className="absolute bottom-4 right-4 rounded-full p-2"
+          onClick={scrollToBottom}
+          variant="secondary"
+        >
+          <ChevronDown className="h-4 w-4" />
+        </Button>
+      )}
     </Card>
   );
 }
