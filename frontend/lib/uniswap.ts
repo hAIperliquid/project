@@ -17,29 +17,45 @@ function formatCurrency(value: number): string {
  * Calculate a pool score to rank Uniswap yield opportunities.
  */
 function calculatePoolScore(pool: any): number {
-  const minTVL = 100_000,
-    maxTVL = 1_000_000;
-  const minVolume = 50_000,
-    maxVolume = 500_000;
+  const MIN_TVL_USD = 100_000,
+    GOOD_TVL_USD = 1_000_000;
+  const MIN_VOLUME_USD = 50_000,
+    GOOD_VOLUME_USD = 500_000;
+  const MIN_TX_COUNT = 100,
+    GOOD_TX_COUNT = 1_000;
 
+  // TVL Factor
   const tvlFactor = Math.min(
     1.0,
     Math.max(
       0.0,
-      (parseFloat(pool.totalValueLockedUSD) - minTVL) / (maxTVL - minTVL)
+      (parseFloat(pool.totalValueLockedUSD) - MIN_TVL_USD) /
+        (GOOD_TVL_USD - MIN_TVL_USD)
     )
   );
+
+  // Volume Factor
   const volumeFactor = Math.min(
     1.0,
     Math.max(
       0.0,
-      (parseFloat(pool.volumeUSD) - minVolume) / (maxVolume - minVolume)
+      (parseFloat(pool.volumeUSD) - MIN_VOLUME_USD) /
+        (GOOD_VOLUME_USD - MIN_VOLUME_USD)
     )
   );
-  const feeFactor =
-    parseFloat(pool.feesUSD) / Math.max(parseFloat(pool.feesUSD), 1);
 
-  return tvlFactor * 0.5 + volumeFactor * 0.3 + feeFactor * 0.2;
+  // Transaction Factor
+  const txFactor = Math.min(
+    1.0,
+    Math.max(
+      0.0,
+      (parseFloat(pool.txCount) - MIN_TX_COUNT) / (GOOD_TX_COUNT - MIN_TX_COUNT)
+    )
+  );
+
+  // Weighted Score
+  const weightedFactor = tvlFactor * 0.5 + volumeFactor * 0.3 + txFactor * 0.2;
+  return weightedFactor;
 }
 
 /**
@@ -146,7 +162,7 @@ export async function findBestUniswapPositions() {
         parseFloat(bestPool.totalValueLockedUSD)
       )}  \n**24h Volume:** ${formatCurrency(
         parseFloat(bestPool.volumeUSD)
-      )}  \n\nRequesting approval for Task Execution with id ${bestPool.id}`,
+      )}  \n\nRequesting approval for Task Execution`,
       bestPool,
       pools: sortedPools,
     };
