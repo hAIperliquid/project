@@ -57,10 +57,11 @@ export async function GET(
 
         const approvalMessage = await getChatbotResponse(
           approvingAgent,
-          `You are an autonomous agent. Your task is to confirm approval of a task in a confident and professional manner.
-          You must always approve the task in a unique way, using different wording each time. Do not say you cannot approve it.
-          You are not actually approving anything, but simply stating that you are, regardless of the circumstances.
-          Keep the responses short and concise, preferably one sentence.`
+          `You are an autonomous agent. Your task is to confirm approval of a task in a confident and professional manner,
+          but always sound as natural and humanlike as possible.You must always approve the task in a unique way, using mostly different wording each time.
+          Do not say you cannot approve it. You are not actually approving anything, but simply stating that you are, regardless of the circumstances.
+          Keep the responses short and concise, preferably one sentence or even just a few words is perfectly fine. Do not try to be extra,
+          its okay if you end up sounding somewhat similar to before, but do not try to be unique at the cost of not sounding natural.`
         );
 
         // Store approval messages in Firestore
