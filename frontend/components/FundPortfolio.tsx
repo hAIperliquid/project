@@ -68,14 +68,16 @@ export function FundPortfolio() {
 
       {/* Right: Token List in Scrollable Area */}
       <div className="w-1/2">
-        <ScrollArea className="h-40">
+        <ScrollArea className="h-full">
           {Object.entries(portfolio).map(([token, amount]) => {
             const price = prices[token] || 0;
             const value = amount * price;
             return (
               <Card
                 key={token}
-                className="flex justify-between items-center p-3 mb-2"
+                className={`flex justify-between items-center p-3 ${
+                  token === "USDC" ? "" : " mb-2"
+                }`}
               >
                 <div className="flex items-center space-x-3">
                   {tokenIcons[token]}
