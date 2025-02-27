@@ -1,7 +1,7 @@
 import { request, gql } from "graphql-request";
 
-// const GRAPH_API_URL = `https://gateway.thegraph.com/api/${process.env.GRAPH_API_KEY}/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV?chain=mainnet`;
-const GRAPH_API_URL = `https://gateway.thegraph.com/api/${process.env.GRAPH_API_KEY}/subgraphs/id/GqzP4Xaehti8KSfQmv3ZctFSjnSUYZ4En5NRsiTbvZpz`;
+const GRAPH_API_URL = `https://gateway.thegraph.com/api/${process.env.GRAPH_API_KEY}/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV`;
+// const GRAPH_API_URL = `https://gateway.thegraph.com/api/${process.env.GRAPH_API_KEY}/subgraphs/id/GqzP4Xaehti8KSfQmv3ZctFSjnSUYZ4En5NRsiTbvZpz`;
 
 /**
  * Format large numbers into readable formats (e.g., $1.2M, $3.5B)
@@ -19,7 +19,7 @@ function formatCurrency(value: number): string {
 function calculatePoolScore(pool: any): number {
   const MIN_TVL_USD = 100_000,
     GOOD_TVL_USD = 1_000_000;
-  const MIN_VOLUME_USD = 50_000,
+  const MIN_VOLUME_USD = 250_000,
     GOOD_VOLUME_USD = 500_000;
   const MIN_TX_COUNT = 100,
     GOOD_TX_COUNT = 1_000;
@@ -64,7 +64,7 @@ function calculatePoolScore(pool: any): number {
 export async function findBestUniswapPositions() {
   const query = gql`
     {
-      pools(first: 10, orderBy: totalValueLockedUSD, orderDirection: desc) {
+      pools(first: 50, orderBy: volumeUSD, orderDirection: desc) {
         liquidity
         feeTier
         feesUSD
@@ -123,16 +123,24 @@ export async function findBestUniswapPositions() {
       return { message: "No liquidity pools found.", pools: [] };
     }
 
-    console.log(
-      "Fetched Uniswap Pool Data:",
-      JSON.stringify(data.pools, null, 2)
-    );
+    data.pools.slice(0, 5).forEach((pool) => {
+      console.log(pool);
+    });
+
+    // console.log(
+    //   "Fetched Uniswap Pool Data:",
+    //   JSON.stringify(data.pools, null, 2)
+    // );
 
     // Rank pools by score and get the top 5
-    const sortedPools = data.pools
-      .map((pool) => ({ ...pool, score: calculatePoolScore(pool) }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 5);
+    // const sortedPools = data.pools
+    //   .map((pool) => ({ ...pool, score: calculatePoolScore(pool) }))
+    //   .sort((a, b) => b.score - a.score)
+    //   .slice(0, 5);
+
+    const sortedPools = data.pools.slice(0, 5);
+    //   .sort((a, b) => parseFloat(b.volumeUSD) - parseFloat(a.volumeUSD))
+    //   .slice(0, 5);
 
     // Format the top 5 pools for chat
     let message = "**Top 5 Uniswap Yield Opportunities:**\n\n";
