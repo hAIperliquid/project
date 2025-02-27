@@ -27,12 +27,15 @@ export function GlobalChat() {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const newMessages = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        sender: doc.data().sender,
-        text: doc.data().message.replace(/\n/g, "  \n"), // Ensure newlines work in markdown
-        timestamp: doc.data().timestamp,
-      }));
+      const newMessages = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          sender: data.sender,
+          text: data.message.replace(/\n/g, "  \n"),
+          timestamp: data.timestamp?.toMillis?.() || Date.now(),
+        };
+      });
 
       setMessages(newMessages);
     });

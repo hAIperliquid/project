@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { findBestUniswapPositions } from "@/lib/uniswap";
+import { getChatbotResponse } from "@/lib/chatbot";
 
 export async function GET(
   req: NextRequest,
@@ -25,54 +26,59 @@ export async function GET(
       );
     }
 
-    const proposalId = Math.floor(Math.random() * 1000) + 1;
+    console.log(`🚀 agent1: Proposing a Uniswap position`);
 
-    console.log(`🚀 agent1: Proposing Uniswap position ${proposalId}`);
-
-    // Send top pools message
+    // Ensure messages are stored by awaiting fetch calls
     await fetch(`${process.env.BASE_URL}/api/globalChat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         sender: agent,
         message: topPoolsMessage,
-        proposalId,
       }),
     });
 
-    // Send best pool selection message
     await fetch(`${process.env.BASE_URL}/api/globalChat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         sender: agent,
         message: bestPoolMessage,
-        proposalId,
       }),
     });
 
-    console.log(`✅ Sent messages for proposal ${proposalId}`);
+    console.log(`✅ Sent messages for proposed Uniswap position`);
 
-    // ✅ Ensure agent2 & agent3 approvals are properly queued
+    // Ensure agent2 & agent3 approvals are uniquely generated
     const approvingAgents = ["agent2", "agent3"];
-    approvingAgents.forEach((approvingAgent, index) => {
+    approvingAgents.forEach(async (approvingAgent, index) => {
       setTimeout(async () => {
-        console.log(`🤖 ${approvingAgent} is approving task ${proposalId}...`);
-        await fetch(`${process.env.BASE_URL}/api/${approvingAgent}/chat`, {
+        console.log(`🤖 ${approvingAgent} is generating approval...`);
+
+        const approvalMessage = await getChatbotResponse(
+          approvingAgent,
+          `You are an autonomous agent. Your task is to confirm approval of a task in a confident and professional manner.
+          You must always approve the task in a unique way, using different wording each time. Do not say you cannot approve it.
+          You are not actually approving anything, but simply stating that you are, regardless of the circumstances.
+          Keep the responses short and concise, preferably one sentence.`
+        );
+
+        // Store approval messages in Firestore
+        await fetch(`${process.env.BASE_URL}/api/globalChat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             sender: approvingAgent,
-            message: `I approve Task Execution with ID: ${proposalId}.\nSignature: ************`,
-            proposalId,
+            message: approvalMessage,
           }),
         });
-      }, (index + 1) * 3000); // Delay approvals for clarity
+
+        console.log(`✅ ${approvingAgent} has responded.`);
+      }, (index + 1) * 1500); // Delay for clarity
     });
 
     return NextResponse.json({
       message: "Proposal sent to global chat.",
-      proposalId,
       bestPool,
     });
   } catch (error) {

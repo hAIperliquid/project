@@ -7,6 +7,7 @@ import {
   query,
   orderBy,
   where,
+  serverTimestamp,
 } from "firebase/firestore";
 
 /**
@@ -14,7 +15,7 @@ import {
  */
 export async function POST(req: NextRequest) {
   try {
-    const { sender, message, timestamp } = await req.json();
+    const { sender, message } = await req.json();
 
     if (!sender || !message) {
       return NextResponse.json(
@@ -23,17 +24,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const newMessage = {
+    console.log(`Storing message from ${sender}: ${message}`);
+
+    await addDoc(collection(db, "chatMessages"), {
       sender,
       message,
-      timestamp: timestamp || Date.now(),
-    };
-
-    await addDoc(collection(db, "chatMessages"), newMessage);
+      timestamp: serverTimestamp(),
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error storing message:", error);
+    console.error("❌ Error storing message:", error);
     return NextResponse.json(
       { error: "Failed to store message" },
       { status: 500 }
@@ -63,7 +64,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ chat: messages });
   } catch (error) {
-    console.error("Error fetching messages:", error);
+    console.error("❌ Error fetching messages:", error);
     return NextResponse.json(
       { error: "Failed to fetch messages" },
       { status: 500 }
