@@ -1,4 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/firebase";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  where,
+} from "firebase/firestore";
+
 // import { getChatbotResponse } from "@/lib/chatbot";
 
 // export async function POST(
@@ -34,8 +44,9 @@ import { NextRequest, NextResponse } from "next/server";
 //   }
 // }
 
-import { chatMessages } from "@/lib/chatStorage";
-
+/**
+ * API route to send agent messages to Firestore.
+ */
 export async function POST(
   req: NextRequest,
   context: { params: Promise<{ agent: string }> }
@@ -53,22 +64,18 @@ export async function POST(
 
     console.log(`✅ Storing message from ${agent}: ${message}`);
 
-    // Store in global chat
-    const newMessage = {
-      id: chatMessages.length + 1,
+    await addDoc(collection(db, "chatMessages"), {
       sender: agent,
       message,
-      timestamp: Date.now(),
       proposalId,
-    };
-
-    chatMessages.push(newMessage);
+      timestamp: Date.now(),
+    });
 
     return NextResponse.json({ status: "Message stored successfully." });
   } catch (error) {
-    console.error("❌ Error in agent chat route:", error);
+    console.error("❌ Error storing agent message:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "Failed to store message" },
       { status: 500 }
     );
   }

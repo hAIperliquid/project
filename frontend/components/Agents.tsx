@@ -48,7 +48,10 @@ export function Agents() {
               <div className={"h-16 bg-primary"}></div>
               <Avatar className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-24 h-24 border-4 border-background z-10">
                 <AvatarImage src={agent.avatar} alt={agent.name} />
-                <AvatarFallback>{agent.name[0]}</AvatarFallback>
+                <AvatarFallback>
+                  {agent.name[0]}
+                  {agent.name[agent.name.length - 1]}
+                </AvatarFallback>
               </Avatar>
               <div className="absolute top-2 right-2 bg-background rounded-full p-1 shadow-md">
                 <Trophy className="text-yellow-500 w-4 h-4" />
