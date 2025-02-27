@@ -37,7 +37,7 @@ function calculatePoolScore(pool: any): number {
     )
   );
   const feeFactor =
-    parseFloat(pool.volumeUSD) * (parseFloat(pool.feeTier) / 1_000_000); // Estimated fee generation
+    parseFloat(pool.feesUSD) / Math.max(parseFloat(pool.feesUSD), 1);
 
   return tvlFactor * 0.5 + volumeFactor * 0.3 + feeFactor * 0.2;
 }
@@ -49,20 +49,53 @@ export async function findBestUniswapPositions() {
   const query = gql`
     {
       pools(first: 10, orderBy: totalValueLockedUSD, orderDirection: desc) {
-        id
+        liquidity
+        feeTier
+        feesUSD
+        token0Price
+        token1Price
+        volumeToken0
+        volumeToken1
+        volumeUSD
+        txCount
+        totalValueLockedToken0
+        totalValueLockedToken1
+        totalValueLockedUSD
+        totalValueLockedETH
         token0 {
           id
           symbol
+          name
           decimals
+          totalSupply
+          volume
+          volumeUSD
+          untrackedVolumeUSD
+          feesUSD
+          txCount
+          poolCount
+          totalValueLocked
+          totalValueLockedUSD
+          totalValueLockedUSDUntracked
+          derivedETH
         }
         token1 {
           id
           symbol
+          name
           decimals
+          totalSupply
+          volume
+          volumeUSD
+          untrackedVolumeUSD
+          feesUSD
+          txCount
+          poolCount
+          totalValueLocked
+          totalValueLockedUSD
+          totalValueLockedUSDUntracked
+          derivedETH
         }
-        feeTier
-        totalValueLockedUSD
-        volumeUSD
       }
     }
   `;
@@ -74,10 +107,10 @@ export async function findBestUniswapPositions() {
       return { message: "No liquidity pools found.", pools: [] };
     }
 
-    // console log each pool
-    data.pools.forEach((pool) => {
-      console.log(pool);
-    });
+    console.log(
+      "Fetched Uniswap Pool Data:",
+      JSON.stringify(data.pools, null, 2)
+    );
 
     // Rank pools by score and get the top 5
     const sortedPools = data.pools
@@ -113,7 +146,7 @@ export async function findBestUniswapPositions() {
         parseFloat(bestPool.totalValueLockedUSD)
       )}  \n**24h Volume:** ${formatCurrency(
         parseFloat(bestPool.volumeUSD)
-      )}  \n\nRequesting approval for Task Execution...`,
+      )}  \n\nRequesting approval for Task Execution with id ${bestPool.id}`,
       bestPool,
       pools: sortedPools,
     };
