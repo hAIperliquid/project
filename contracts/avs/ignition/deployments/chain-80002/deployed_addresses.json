@@ -1,3 +1,5 @@
 {
-  "SampleAvsLogicCounterModule#SampleAvsLogicCounter": "0x86F619b22AbBe87eD15AC942017f58e479bf9D6f"
+  "SampleAvsLogicCounterModule#SampleAvsLogicCounter": "0x86F619b22AbBe87eD15AC942017f58e479bf9D6f",
+  "SampleAvsLogicDataReaderModule#SampleAvsLogicDataReader": "0xB8c3AA6aD5D412b5C683B331a0b5EFbf2984C70c",
+  "haiperliquidAvsLogicModule#HAIperliquidAvsLogic": "0xa304a1BB1e5964ff829e283090943b6ee0aF1191"
 }

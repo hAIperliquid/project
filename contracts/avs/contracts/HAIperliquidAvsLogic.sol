@@ -13,8 +13,9 @@ $$    $$/   $$  $$/ $$ |  $$ |$$       |$$ |  $$ |  $$  $$/ $$ |$$       |
 */
 
 import './IAvsLogic.sol';
+import './ITreasury.sol';
 
-contract SampleAvsLogicDataReader is IAvsLogic {
+contract HAIperliquidAvsLogic is IAvsLogic {
     struct TaskData {
         uint8 activity;
         uint8 category;  
@@ -22,29 +23,32 @@ contract SampleAvsLogicDataReader is IAvsLogic {
         uint256 amountB;
     }
     
-    uint256 public counter;
-    IAttestationCenter.TaskInfo public lastTaskInfo;
+    address public owner;
     address public attestationCenter;
-    TaskData public lastTaskData;
+    ITreasury public treasury;
 
-    constructor (address _attestationCenter) {
+    constructor (address _attestationCenter, ITreasury _treasury, address _owner) {
         attestationCenter = _attestationCenter;
+        treasury = _treasury;
+        owner = _owner;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;
+    }
+
+    /* Update the Treasury Contract of the AVS Logic */
+    function setTreasury(ITreasury _treasury) public onlyOwner{
+        treasury = _treasury;
     }
 
     function afterTaskSubmission(IAttestationCenter.TaskInfo calldata _taskInfo, bool _isApproved, bytes calldata /* _tpSignature */, uint256[2] calldata /* _taSignature */, uint256[] calldata /* _operatorIds */) external {
         require(msg.sender == attestationCenter, "Not allowed");
 
-        lastTaskInfo = _taskInfo;
-
         if(_isApproved){
-            // Old Stuff here
-            lastTaskInfo = _taskInfo;
-            counter++;
-
-            // Read the TaskInfoData;
-            (uint8 activity, uint8 category, uint256 amountA, uint256 amountB) = abi.decode(_taskInfo.data, (uint8, uint8, uint256, uint256));
-            TaskData memory task = TaskData(activity, category, amountA, amountB);
-            lastTaskData = task;
+            // Call Treasury Contract with the Approved Signed Data
+            treasury.executeApprovedTask(_taskInfo.data);
         }
     }
 
