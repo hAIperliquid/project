@@ -22,7 +22,13 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ShinyText from "@/components/ShinyText";
-import ContractRead from "@/components/testing/ContractRead";
+import { getTokenBalance } from "@/lib/web3";
+import { getTokenPrices } from "@/lib/coingecko";
+import {
+  BITCOIN_ADDRESS,
+  ETHEREUM_ADDRESS,
+  USDC_ADDRESS,
+} from "@/constants/protocol";
 
 function AnimatedNumber({ value }: { value: number }) {
   const [displayValue, setDisplayValue] = useState(value);
@@ -62,6 +68,28 @@ function AnimatedNumber({ value }: { value: number }) {
 export default function Home() {
   const { scrollY } = useScroll();
   const opacity = useTransform(scrollY, [0, 300], [0, 1]);
+  const [totalAUM, setTotalAUM] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function fetchAUM() {
+      const [btc, eth, usdc] = await Promise.all([
+        getTokenBalance(BITCOIN_ADDRESS),
+        getTokenBalance(ETHEREUM_ADDRESS),
+        getTokenBalance(USDC_ADDRESS),
+      ]);
+
+      const prices = await getTokenPrices();
+
+      const totalValue =
+        parseFloat(btc) * prices.BTC +
+        parseFloat(eth) * prices.ETH +
+        parseFloat(usdc);
+
+      setTotalAUM(totalValue);
+    }
+
+    fetchAUM();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -78,7 +106,11 @@ export default function Home() {
                 <h3 className="text-lg">Assets Under Management</h3>
                 <div className="ml-2 h-3 w-3 rounded-full bg-primary"></div>
               </div>
-              <AnimatedNumber value={12358.72} />
+              {totalAUM !== null ? (
+                <AnimatedNumber value={totalAUM} />
+              ) : (
+                <p className="text-7xl font-bold">$0.00</p>
+              )}
             </motion.div>
             <motion.p
               className="text-xl mb-8 max-w-2xl mx-auto"
@@ -105,7 +137,6 @@ export default function Home() {
               </Button>
             </motion.div>
           </div>
-          <ContractRead />
         </section>
 
         <motion.section className="py-16" style={{ opacity }}>
