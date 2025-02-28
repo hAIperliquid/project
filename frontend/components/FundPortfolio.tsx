@@ -1,86 +1,75 @@
 "use client";
 
-import { useState, useEffect, JSX } from "react";
+import { useEffect, useState } from "react";
+import { getUserBalance } from "@/lib/web3";
+import { getTokenPrices } from "@/lib/coingecko";
+import {
+  BITCOIN_ADDRESS,
+  ETHEREUM_ADDRESS,
+  USDC_ADDRESS,
+} from "@/constants/protocol";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { DollarSign, Bitcoin, EclipseIcon as Ethereum } from "lucide-react";
+import { DollarSign, Bitcoin } from "lucide-react";
+import { EthereumIcon } from "./ui/EthereumIcon";
 
-const COINGECKO_API_URL = "https://api.coingecko.com/api/v3/simple/price";
-
-/** Hardcoded token balances */
-const portfolio: { [key in "BTC" | "ETH" | "USDC"]: number } = {
-  BTC: 100,
-  ETH: 2000,
-  USDC: 100000,
-};
-
-/** Icons for each token */
-const tokenIcons: Record<string, JSX.Element> = {
-  BTC: <Bitcoin className="text-orange-500" size={20} />,
-  ETH: <Ethereum className="text-blue-500" size={20} />,
-  USDC: <DollarSign className="text-green-500" size={20} />,
-};
+const userAddress = "0x74EF2a3c2CC1446643Ab59e5b65dd86665521F1c";
 
 export function FundPortfolio() {
-  const [prices, setPrices] = useState<{
-    [key in "BTC" | "ETH" | "USDC"]?: number;
-  }>({});
-  const [loading, setLoading] = useState(true);
+  const [balances, setBalances] = useState({ BTC: "0", ETH: "0", USDC: "0" });
+  const [prices, setPrices] = useState({ BTC: 0, ETH: 0, USDC: 1 });
 
   useEffect(() => {
-    async function fetchPrices() {
-      try {
-        const response = await fetch(
-          `${COINGECKO_API_URL}?ids=bitcoin,ethereum,usd-coin&vs_currencies=usd`
-        );
-        const data = await response.json();
-        setPrices({
-          BTC: data.bitcoin.usd,
-          ETH: data.ethereum.usd,
-          USDC: data["usd-coin"].usd,
-        });
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching token prices:", error);
-      }
+    async function fetchData() {
+      const [btc, eth, usdc] = await Promise.all([
+        getUserBalance(BITCOIN_ADDRESS, userAddress),
+        getUserBalance(ETHEREUM_ADDRESS, userAddress),
+        getUserBalance(USDC_ADDRESS, userAddress),
+      ]);
+      setBalances({ BTC: btc, ETH: eth, USDC: usdc });
+
+      const pricesData = await getTokenPrices();
+      setPrices(pricesData);
     }
-    fetchPrices();
+
+    fetchData();
   }, []);
 
   /** Calculate total portfolio value */
-  const totalValue = Object.keys(portfolio).reduce((acc, key) => {
-    return acc + (prices[key] || 0) * portfolio[key];
-  }, 0);
+  const totalValue =
+    parseFloat(balances.BTC) * prices.BTC +
+    parseFloat(balances.ETH) * prices.ETH +
+    parseFloat(balances.USDC);
 
   return (
     <Card className="mb-4 p-5 flex flex-row">
-      {/* Left: Total Portfolio Value */}
       <div className="w-1/2 flex flex-col justify-center items-center">
         <CardHeader className="pb-2">
-          <CardTitle className="text-xl">Total Funds</CardTitle>
+          <CardTitle className="text-xl">User Portfolio</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">
-            {loading ? "Loading..." : `$${totalValue.toLocaleString()}`}
-          </div>
+          <div className="text-3xl font-bold">${totalValue.toFixed(2)}</div>
         </CardContent>
       </div>
 
-      {/* Right: Token List in Scrollable Area */}
       <div className="w-1/2">
         <ScrollArea className="h-full">
-          {Object.entries(portfolio).map(([token, amount]) => {
+          {Object.entries(balances).map(([token, amount]) => {
             const price = prices[token] || 0;
-            const value = amount * price;
+            const value = parseFloat(amount) * price;
             return (
               <Card
                 key={token}
-                className={`flex justify-between items-center p-3 ${
-                  token === "USDC" ? "" : " mb-2"
-                }`}
+                className="flex justify-between items-center p-3 mb-2"
               >
                 <div className="flex items-center space-x-3">
-                  {tokenIcons[token]}
+                  {token === "BTC" ? (
+                    <Bitcoin size={20} />
+                  ) : token === "ETH" ? (
+                    <EthereumIcon size={20} />
+                  ) : (
+                    <DollarSign size={20} />
+                  )}
                   <div>
                     <p className="text-sm font-semibold">{token}</p>
                     <p className="text-xs text-gray-400">

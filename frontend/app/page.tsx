@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ShinyText from "@/components/ShinyText";
+import ContractRead from "@/components/testing/ContractRead";
 
 function AnimatedNumber({ value }: { value: number }) {
   const [displayValue, setDisplayValue] = useState(value);
@@ -104,6 +105,7 @@ export default function Home() {
               </Button>
             </motion.div>
           </div>
+          <ContractRead />
         </section>
 
         <motion.section className="py-16" style={{ opacity }}>
