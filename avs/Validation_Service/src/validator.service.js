@@ -6,12 +6,32 @@ async function validate(proofOfTask) {
 
   try {
       const taskResult = await dalService.getIPfsTask(proofOfTask);
-      var data = await oracleService.getPrice("ETHUSDT");
-      const upperBound = data.price * 1.05;
-      const lowerBound = data.price * 0.95;
-      let isApproved = true;
-      if (taskResult.price > upperBound || taskResult.price < lowerBound) {
-        isApproved = false;
+      let isApproved = false;
+
+      const activity = taskResult.activity;
+      const category = taskResult.category;
+      const tokenA = taskResult.tokenA;
+      const tokenB = taskResult.tokenB;
+      const amountA = taskResult.amountA;
+      const amountB = taskResult.amountB;
+      const poolTVL = taskResult.poolTVL;
+
+      // Check Validity of the Task Proof
+      if(!activity || !category || !tokenA || !tokenB || !amountA || !amountB || !poolTVL){
+        return false;
+      }
+
+      // Check whether category is True and is allowed
+      // Currently Treasury Contract only allows two tasks for yield strategy (BTC-ETH) and (ETH-USDC)
+      if(taskResult.category == 1){
+        if(tokenA === "BTC" && tokenB === "ETH"){
+          isApproved = true;
+        }
+      }
+      else if(taskResult.category == 2){
+        if(tokenA === "ETH" || tokenB === "USDC"){
+          isApproved = true;
+        }
       }
       return isApproved;
     } catch (err) {

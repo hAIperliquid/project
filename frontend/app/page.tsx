@@ -5,6 +5,7 @@ import { FundPortfolio } from "@/components/FundPortfolio";
 import { Agents } from "@/components/Agents";
 import { GlobalChat } from "@/components/GlobalChat";
 import ContractRead from "@/components/testing/ContractRead";
+import Web3JSTesting from "@/components/testing/Web3JS";
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
         <FundPortfolio />
         <Agents />
         <ContractRead />
+        <Web3JSTesting />
       </main>
       <GlobalChat />
     </div>
