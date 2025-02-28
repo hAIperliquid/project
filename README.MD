@@ -48,9 +48,11 @@ If approved, the yield strategy will be executed
 
 ## Deployed Contracts
 
+Contracts are deployed on Holesky for L1 and Polygon Amoy for L2
+
 - [Contract Deployer](https://amoy.polygonscan.com/address/0x74EF2a3c2CC1446643Ab59e5b65dd86665521F1c) (Address that deploy all the contracts)
-- [AVS Governance](https://holesky.etherscan.io/address/0xEa8C96d14055a076547CC3e88eE36404B224ef71)
 - [Attestation Center](https://amoy.polygonscan.com/address/0x426b372645E195eaB6AEa117D106a9e2766F373e) (receive submited task on the AVS)
+- [AVS Governance](https://holesky.etherscan.io/address/0xEa8C96d14055a076547CC3e88eE36404B224ef71) 
 - [Operator 1](https://holesky.etherscan.io/address/0x7151FF7b655749998b843Cb1C817a43C28f46cB9)
 - [Operator 2](https://holesky.etherscan.io/address/0xA04C1159e8f5121f612745C593D3d076a0220CD4)
 - [Operator 3](https://holesky.etherscan.io/address/0x0a1d3b31cDE4a1D1Ca01a775B577904d97659736)
