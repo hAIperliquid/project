@@ -29,6 +29,7 @@ import {
   ETHEREUM_ADDRESS,
   USDC_ADDRESS,
 } from "@/constants/protocol";
+import SplitText from "@/components/SplitText";
 
 function AnimatedNumber({ value }: { value: number }) {
   const [displayValue, setDisplayValue] = useState(value);
@@ -51,7 +52,7 @@ function AnimatedNumber({ value }: { value: number }) {
 
   return (
     <motion.div
-      className="flex items-center text-7xl font-bold text-accent-foreground"
+      className="flex items-center text-6xl font-bold text-accent-foreground"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -94,8 +95,25 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <main className="flex-grow">
-        <section className="bg-gradient-to-b from-secondary to-background py-20 h-screen flex flex-col justify-center">
+        <section className="bg-gradient-to-b from-secondary to-background h-screen flex flex-col pt-40">
           <div className="container mx-auto px-4 text-center">
+            <motion.h1
+              className="text-8xl font-bold mb-32 bg-gradient-to-r from-black to-primary bg-clip-text text-transparent"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <SplitText
+                text="hAIperliquid"
+                animationFrom={{
+                  opacity: 0,
+                  transform: "translate3d(0,100px,0)",
+                }}
+                animationTo={{ opacity: 1, transform: "translate3d(0,0,0)" }}
+                threshold={0.2}
+                rootMargin="-50px"
+              />
+            </motion.h1>
             <motion.div
               className="mb-12 flex flex-col items-center"
               initial={{ opacity: 0, y: 20 }}
@@ -109,7 +127,7 @@ export default function Home() {
               {totalAUM !== null ? (
                 <AnimatedNumber value={totalAUM} />
               ) : (
-                <p className="text-7xl font-bold">$0.00</p>
+                <p className="text-6xl font-bold">$0.00</p>
               )}
             </motion.div>
             <motion.p
