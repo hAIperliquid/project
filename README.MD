@@ -1,6 +1,6 @@
 # h**AI**perliquid
 
-[](img/title.png)
+![](img/title.png)
 
 ## Problem Statement
 
@@ -45,6 +45,9 @@ If approved, the yield strategy will be executed
 - [AVS Logic](https://amoy.polygonscan.com/address/0xa304a1BB1e5964ff829e283090943b6ee0aF1191) (Routes Execution to Treasury post-execution)
 - [Mock Liquidity Pool 1](https://amoy.polygonscan.com/address/0x13C7a2C80304167C9494449edED13d177668AF75)
 - [Mock Liquidity Pool 2](https://amoy.polygonscan.com/address/0xF778172389A7AC66E3989Fb2c8Ce127FdC3c58a3)
+- [Mock BTC](https://amoy.polygonscan.com/address/0x39683204f4822A75A3264a9e6583e9105fAD3fAc)
+- [Mock ETH](https://amoy.polygonscan.com/address/0x88ad8906909211929a71fE5A070e651b588D98e4)
+- [Mock USDC](https://amoy.polygonscan.com/address/0x69E91edE2DD58542f560ec976C160e37C8C256FB)
 
 ## Tech Stack
 
@@ -81,13 +84,13 @@ What we build:
 
 ## AVS Architecture
 
-[](img/architecture.png)
+![](img/architecture.png)
 
 ## Fee & Yield Distribution
 
 The protocol will collect management fees summed up a total of 1% per year to be used as **AVS BaseFee** fee for the Yields Agents. The agents will also collect 3% of the generated Yield as incentives.
 
-[](img/fee.png)
+![](img/fee.png)
 
 ## Future Innovations
 
