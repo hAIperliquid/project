@@ -44,20 +44,20 @@ export function GlobalChat() {
   }, []);
 
   /** Auto-start agent1 after 3s */
-  useEffect(() => {
-    if (!agentStarted) {
-      const timer = setTimeout(async () => {
-        try {
-          await fetch("/api/agent1/openPosition");
-          setAgentStarted(true);
-        } catch (error) {
-          console.error("Error auto-starting agent1:", error);
-        }
-      }, 3000);
+  //   useEffect(() => {
+  //     if (!agentStarted) {
+  //       const timer = setTimeout(async () => {
+  //         try {
+  //           await fetch("/api/agent1/openPosition");
+  //           setAgentStarted(true);
+  //         } catch (error) {
+  //           console.error("Error auto-starting agent1:", error);
+  //         }
+  //       }, 3000);
 
-      return () => clearTimeout(timer);
-    }
-  }, [agentStarted]);
+  //       return () => clearTimeout(timer);
+  //     }
+  //   }, [agentStarted]);
 
   /** Format timestamps into readable times */
   const formatTimestamp = (timestamp: number) => {
