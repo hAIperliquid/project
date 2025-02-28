@@ -3,7 +3,7 @@ import {Web3} from 'web3';
 import {ethers} from 'ethers';
 import {useState, useEffect} from 'react';
 
-import { ATTESTATION_CENTER } from '@/constants/avs';
+import { ATTESTATION_CENTER } from '@/constants/protocol';
 import { ATTESTATION_ABI } from '@/utils/attestationABI';
 
 
