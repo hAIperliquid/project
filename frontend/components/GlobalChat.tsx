@@ -10,11 +10,35 @@ import { ChevronDown } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 
+/** Agent Profiles */
+const agentData = [
+  {
+    name: "agent1",
+    avatar: "/chillguy.png",
+  },
+  {
+    name: "agent2",
+    avatar: "/sadpepe.jpg",
+  },
+  {
+    name: "agent3",
+    avatar: "/dogwifhat.jpg",
+  },
+];
+
+/** Function to get an agent's avatar */
+const getAgentAvatar = (sender: string) => {
+  const agent = agentData.find(
+    (agent) => agent.name.toLowerCase() === sender.toLowerCase()
+  );
+  return agent ? agent.avatar : "/default-avatar.png";
+};
+
 export function GlobalChat() {
+  //   const [agentStarted, setAgentStarted] = useState(false);
   const [messages, setMessages] = useState<
     { id: string; sender: string; text: string; timestamp: number }[]
   >([]);
-  const [agentStarted, setAgentStarted] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -42,22 +66,6 @@ export function GlobalChat() {
 
     return () => unsubscribe();
   }, []);
-
-  /** Auto-start agent1 after 3s */
-  useEffect(() => {
-    if (!agentStarted) {
-      const timer = setTimeout(async () => {
-        try {
-          await fetch("/api/agent1/openPosition");
-          setAgentStarted(true);
-        } catch (error) {
-          console.error("Error auto-starting agent1:", error);
-        }
-      }, 3000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [agentStarted]);
 
   /** Format timestamps into readable times */
   const formatTimestamp = (timestamp: number) => {
@@ -87,10 +95,8 @@ export function GlobalChat() {
     };
 
     scrollArea.addEventListener("scroll", handleScroll);
-
-    // Cleanup event listener on unmount
     return () => scrollArea.removeEventListener("scroll", handleScroll);
-  }, [messages]); // Runs every time messages update
+  }, [messages]);
 
   /** Scroll to bottom when new messages arrive if already near bottom */
   useEffect(() => {
@@ -103,7 +109,23 @@ export function GlobalChat() {
     if (scrolledToBottom) {
       scrollToBottom();
     }
-  }, [messages, scrollToBottom]); // Depend on messages so it updates when a new message arrives
+  }, [messages, scrollToBottom]);
+
+  /** Auto-start agent1 after 3s */
+  //   useEffect(() => {
+  //     if (!agentStarted) {
+  //       const timer = setTimeout(async () => {
+  //         try {
+  //           await fetch("/api/agent1/openPosition");
+  //           setAgentStarted(true);
+  //         } catch (error) {
+  //           console.error("Error auto-starting agent1:", error);
+  //         }
+  //       }, 3000);
+
+  //       return () => clearTimeout(timer);
+  //     }
+  //   }, [agentStarted]);
 
   return (
     <Card className="w-full lg:w-1/3 flex flex-col h-[400px] lg:h-screen relative">
@@ -120,7 +142,11 @@ export function GlobalChat() {
               <div key={msg.id} className="flex justify-start mb-4">
                 <div className="flex items-start flex-row">
                   <Avatar className="w-8 h-8">
-                    <AvatarImage src={`/placeholder.svg?height=32&width=32`} />
+                    <AvatarImage
+                      src={getAgentAvatar(msg.sender)}
+                      alt={msg.sender}
+                      className="object-cover w-full h-full"
+                    />
                     <AvatarFallback>
                       {msg.sender[0]}
                       {msg.sender[msg.sender.length - 1]}
