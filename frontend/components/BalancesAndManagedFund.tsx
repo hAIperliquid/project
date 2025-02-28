@@ -24,7 +24,7 @@ const TREASURY_CONTRACT_URL =
   "https://amoy.polygonscan.com/address/0xC289d9d42A4d10D0E84e82D7Aa23d28F0Cab2d0d";
 
 export function BalancesAndManagedFund() {
-  const [totalAUM, setTotalAUM] = useState("0");
+  const [totalAUM, setTotalAUM] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
   const [token, setToken] = useState("USDC");
 
@@ -42,6 +42,7 @@ export function BalancesAndManagedFund() {
         parseFloat(btc) * pricesData.BTC +
         parseFloat(eth) * pricesData.ETH +
         parseFloat(usdc);
+
       setTotalAUM(totalValue.toFixed(2));
     }
 
@@ -72,7 +73,14 @@ export function BalancesAndManagedFund() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Left: AUM Overview */}
           <div className="flex flex-col justify-center">
-            <div className="text-3xl font-bold">${totalAUM}</div>
+            <div className="text-3xl font-bold">
+              {totalAUM !== null
+                ? `$${parseFloat(totalAUM).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}`
+                : "Loading..."}
+            </div>
             <div className="flex items-center mt-1">
               <ArrowUpRight className="text-green-500 mr-1" size={14} />
               <span className="text-green-500 text-sm font-medium">+3.3%</span>

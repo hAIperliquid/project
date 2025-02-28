@@ -48,7 +48,13 @@ export function FundPortfolio() {
           <CardTitle className="text-xl">User Portfolio</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">${totalValue.toFixed(2)}</div>
+          <div className="text-3xl font-bold">
+            $
+            {totalValue.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </div>
         </CardContent>
       </div>
 
@@ -73,12 +79,18 @@ export function FundPortfolio() {
                   <div>
                     <p className="text-sm font-semibold">{token}</p>
                     <p className="text-xs text-gray-400">
-                      {amount} {token}
+                      {parseFloat(amount).toLocaleString(undefined)} {token}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold">${value.toFixed(2)}</p>
+                  <p className="text-sm font-semibold">
+                    $
+                    {value.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </p>
                 </div>
               </Card>
             );
