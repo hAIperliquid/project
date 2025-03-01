@@ -79,28 +79,30 @@ export async function findBestUniswapPositions() {
     }
 
     const pools = data.pools;
+    console.log(pools);
 
     // Format the top 5 pools for chat
-    let message = "**Top 5 Uniswap Yield Opportunities:**\n\n";
+    let message = "**These are some Top Uniswap Yield Opportunities:**\n\n";
     pools.forEach((pool, index) => {
       message += `**${index + 1}. ${pool.token0.symbol} / ${
         pool.token1.symbol
       }**\n`;
-      message += `- TVL: ${formatCurrency(
+      message += `- ${pool.token0.symbol} Liquidity: ${pool.token0.totalSupply}\n`;
+      message += `- ${pool.token1.symbol} Liquidity: ${pool.token1.totalSupply}\n`;
+      message += `- TVL: **${formatCurrency(
         parseFloat(pool.totalValueLockedUSD)
-      )}\n\n`;
+      )}**\n\n`;
     });
+    message += "\nThe pools fit the criteria of having **High Volumes** with **High TVLs** \nand **Good Fee Ratios**. This could be a good position to allocate the funds.\n"
 
     // Select the best pool
     const bestPool = pools[0];
 
     return {
       topPoolsMessage: message,
-      bestPoolMessage: `**Selected the best pool for execution:**\n\n**Pool:** ${
+      bestPoolMessage: `**Selected the best pool for execution:**\n\nPool: **${
         bestPool.token0.symbol
-      } / ${bestPool.token1.symbol}\n- TVL: ${formatCurrency(
-        parseFloat(bestPool.totalValueLockedUSD)
-      )}\n\nRequesting approval for Task Execution`,
+      } / ${bestPool.token1.symbol}**\n\nRequesting approval for Task Execution`,
       bestPool,
       pools,
     };

@@ -16,6 +16,15 @@ export async function GET(
       );
     }
 
+    await fetch(`${process.env.BASE_URL}/api/globalChat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sender: agent,
+        message: "Fetching Best Yield Opportunities from **Uniswap**...",
+      }),
+    });
+
     const { topPoolsMessage, bestPoolMessage, bestPool } =
       await findBestUniswapPositions();
 
@@ -46,6 +55,38 @@ export async function GET(
         message: bestPoolMessage,
       }),
     });
+
+    await fetch(`${process.env.BASE_URL}/api/globalChat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sender: agent,
+        message: "Sending Request to AVS Execution Service...",
+      }),
+    });
+
+    console.log("Sending Task to Execution Service")
+
+    const res = await fetch(`http://localhost:4003/task/execute`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        activity: 1,
+        category: 1,
+        tokenA: bestPool.token0.symbol,
+        tokenB: bestPool.token1.symbol, 
+      }),
+    });
+    const json = await res.json();
+    console.log(json);
+    // await fetch(`${process.env.BASE_URL}/api/globalChat`, {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({
+    //     sender: agent,
+    //     message: JSON.stringify(json),
+    //   }),
+    // });
 
     console.log(`✅ Sent messages for proposed Uniswap position`);
 
@@ -78,8 +119,17 @@ export async function GET(
       }, (index + 1) * 1500); // Delay for clarity
     });
 
+    await fetch(`${process.env.BASE_URL}/api/globalChat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sender: agent,
+        message: `Task successfully executed.\n**Proof of Task:**\n${json.data.proofOfTask}`,
+      }),
+    });
+
     return NextResponse.json({
-      message: "Proposal sent to global chat.",
+      message: `Proposal sent to global chat.`,
       bestPool,
     });
   } catch (error) {

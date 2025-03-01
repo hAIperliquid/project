@@ -35,7 +35,6 @@ const getAgentAvatar = (sender: string) => {
 };
 
 export function GlobalChat() {
-  //   const [agentStarted, setAgentStarted] = useState(false);
   const [messages, setMessages] = useState<
     { id: string; sender: string; text: string; timestamp: number }[]
   >([]);
@@ -112,20 +111,18 @@ export function GlobalChat() {
   }, [messages, scrollToBottom]);
 
   /** Auto-start agent1 after 3s */
-  //   useEffect(() => {
-  //     if (!agentStarted) {
-  //       const timer = setTimeout(async () => {
-  //         try {
-  //           await fetch("/api/agent1/openPosition");
-  //           setAgentStarted(true);
-  //         } catch (error) {
-  //           console.error("Error auto-starting agent1:", error);
-  //         }
-  //       }, 3000);
-
-  //       return () => clearTimeout(timer);
-  //     }
-  //   }, [agentStarted]);
+  useEffect(() => {
+    const timer = async () => {
+    try {
+        await fetch("/api/agent1/openPosition");
+        await new Promise((resolve) => setTimeout(resolve, 30000));
+        timer();
+      } catch (error) {
+        console.error("Error auto-starting agent1:", error);
+      }
+    };
+    timer();
+  }, []);
 
   return (
     <Card className="w-full lg:w-1/3 flex flex-col h-[400px] lg:h-screen relative">
@@ -152,7 +149,7 @@ export function GlobalChat() {
                       {msg.sender[msg.sender.length - 1]}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="mx-2 py-2 px-3 rounded-lg bg-secondary text-black max-w-xs text-sm relative">
+                  <div className="mx-2 py-2 px-3 rounded-lg bg-secondary text-black w-full text-sm relative">
                     <p className="text-base font-semibold">{msg.sender}</p>
                     <ReactMarkdown>{msg.text}</ReactMarkdown>
                     <span className="w-full flex justify-end text-muted-foreground text-xs">
