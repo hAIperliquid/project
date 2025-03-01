@@ -17,11 +17,12 @@ function init() {
 }
 
 async function sendTask(proofOfTask, data, taskDefinitionId) {
-
+  console.log("Sending task to Attesters");
   var wallet = new ethers.Wallet(privateKey);
   var performerAddress = wallet.address;
+  //data = ethers.AbiCoder.defaultAbiCoder().encode(["string"], [data]);
+  console.log(data);
 
-  data = ethers.hexlify(ethers.toUtf8Bytes(data));
   const message = ethers.AbiCoder.defaultAbiCoder().encode(["string", "bytes", "address", "uint16"], [proofOfTask, data, performerAddress, taskDefinitionId]);
   const messageHash = ethers.keccak256(message);
   const sig = wallet.signingKey.sign(messageHash).serialized;
@@ -37,10 +38,10 @@ async function sendTask(proofOfTask, data, taskDefinitionId) {
       sig,
     ]
   };
-    try {
-      const provider = new ethers.JsonRpcProvider(rpcBaseAddress);
-      const response = await provider.send(jsonRpcBody.method, jsonRpcBody.params);
-      console.log("API response:", response);
+  try { 
+    const provider = new ethers.JsonRpcProvider(rpcBaseAddress);
+    const response = await provider.send(jsonRpcBody.method, jsonRpcBody.params);
+    console.log("API response:", response);
   } catch (error) {
       console.error("Error making API request:", error);
   }
