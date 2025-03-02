@@ -24,7 +24,8 @@ if (!fs.existsSync(WALLET_DIR)) {
   fs.mkdirSync(WALLET_DIR, { recursive: true });
 }
 
-let agents: Record<string, { agent: any; config: any }> = {};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const agents: Record<string, { agent: any; config: any }> = {};
 
 async function initializeAgent(agentName: string) {
   if (agents[agentName]) return agents[agentName];
