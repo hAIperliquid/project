@@ -14,19 +14,15 @@ router.post("/execute", async (req, res) => {
     try {
         var taskDefinitionId = Number(req.body.taskDefinitionId) || 0;
 
-        console.log("TESTING");
-        const activity = 1;
-        console.log("activity:", activity);
-        const category = 1;
-        console.log("category:", category);
-        const tokenA = "BTC";
-        console.log("tokenA:", tokenA);
-        const tokenB = "ETH";
-        console.log("tokenB:", tokenB);
+        console.log("Accepting Task Execution Request");
+        console.log(req.body);
+        let activity = req.body.activity;
+        let category = 1;
+        let tokenA = req.body.tokenA;
+        let tokenB = req.body.tokenB;
+        let pool = req.body.pool;
         const amountA = 2000000000n;
-        console.log("amountA:", amountA);
         const amountB = 2000000000n;
-        console.log("amountB:", amountB);
         const time = new Date();
 
         console.log("activity:", activity);
@@ -36,8 +32,8 @@ router.post("/execute", async (req, res) => {
         console.log("amountA:", amountA);
         console.log("amountB:", amountB);
 
+        // Add Encoded Tx Details to Sign
         const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint8", "uint8", "uint256", "uint256"],[activity, category, amountA, amountB]);
-        //const data = "hello";
         console.log("Encoded Data to Sign:", data);
 
         const result = {
@@ -45,8 +41,12 @@ router.post("/execute", async (req, res) => {
             category,
             tokenA,
             tokenB,
+            amountA: amountA.toString(),
+            amountB: amountB.toString(),
             time: time.toISOString(),
+            pool,
         }
+        console.log("Uploaded Data to IPFS:", result);
         const cid = await dalService.publishJSONToIpfs(result);
         console.log("CID:", cid);
         await dalService.sendTask(cid, data, taskDefinitionId);
@@ -55,6 +55,29 @@ router.post("/execute", async (req, res) => {
         console.log(error)
         return res.status(500).send(new CustomError("Something went wrong", {}));
     }
+})
+
+router.post("/badexecution", async (req, res) => {
+    console.log("Executing task");
+
+    try {
+        var taskDefinitionId = Number(req.body.taskDefinitionId) || 0;
+        console.log(`taskDefinitionId: ${taskDefinitionId}`);
+
+        const result = await oracleService.getPrice("ETHUSDT");
+        result.price = 0;
+        const cid = await dalService.publishJSONToIpfs(result);
+        const data = "hello";
+        await dalService.sendTask(cid, data, taskDefinitionId);
+        return res.status(200).send(new CustomResponse({proofOfTask: cid, data: data, taskDefinitionId: taskDefinitionId}, "Task executed successfully"));
+    } catch (error) {
+        console.log(error)
+        return res.status(500).send(new CustomError("Something went wrong", {}));
+    }
+})
+
+router.get("/hello", async (req, res) => {
+    return res.status(200).send(new CustomResponse({}, "Hello from execution service"));
 })
 
 module.exports = router

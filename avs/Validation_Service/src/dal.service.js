@@ -7,13 +7,9 @@ function init() {
   ipfsHost = process.env.IPFS_HOST;
 }
 
-
 async function getIPfsTask(cid) {
-    const { data } = await axios.get(ipfsHost + cid);
-    return {
-      symbol: data.symbol,
-      price: parseFloat(data.price),
-    };
+    const res = await axios.get(ipfsHost + cid);
+    return res.data;
   }  
   
 module.exports = {
