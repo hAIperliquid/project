@@ -75,6 +75,7 @@ export async function GET(
         category: 1,
         tokenA: bestPool.token0.symbol,
         tokenB: bestPool.token1.symbol, 
+        pool: '0x13C7a2C80304167C9494449edED13d177668AF75',
       }),
     });
     const json = await res.json();
@@ -124,7 +125,7 @@ export async function GET(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         sender: agent,
-        message: `Task successfully executed.\n**Proof of Task:**\n${json.data.proofOfTask}`,
+        message: `Task successfully executed.\nProof of Task:\n**[${json.data.proofOfTask}](https://othentic.mypinata.cloud/ipfs/${json.data.proofOfTask})**\nTx:\n**[Click to View Tx](https://amoy.polygonscan.com/address/0x426b372645E195eaB6AEa117D106a9e2766F373e)**`,
       }),
     });
 

@@ -115,7 +115,7 @@ export function GlobalChat() {
     const timer = async () => {
     try {
         await fetch("/api/agent1/openPosition");
-        await new Promise((resolve) => setTimeout(resolve, 30000));
+        await new Promise((resolve) => setTimeout(resolve, 60000));
         timer();
       } catch (error) {
         console.error("Error auto-starting agent1:", error);
